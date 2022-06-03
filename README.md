@@ -2,7 +2,7 @@
 - Clone this directory
 - npm install to install node modules
 - npm start to start the web application
-- Application ready
+- Application readyy
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
