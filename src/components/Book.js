@@ -11,13 +11,12 @@ const Book = ({ book, onDelete }) => {
           onClick={() => onDelete(book.id)}
         />{" "}
       </h3>
-      <p>author: {book.author}</p>
-
-      <p> Publication Year: {book.pubYear} </p>
+      <p>Author: {book.author}</p>
 
       <p> Rating: {book.rating} </p>
+      <p> ISBN: {book.isbn}</p>
 
-      {book.isbn ? <p> ISBN: {book.isbn} </p> : ""}
+      {/* {book.isbn ? <p> ISBN: {book.isbn} </p> : ""} */}
     </div>
   );
 };
