@@ -1,21 +1,27 @@
 # Book Catalog
-- Clone this directory
+
+- git init
+- git clone https://github.com/anhminhbo/BookCatalog.git
 - npm install to install node modules
-- npm start to start the web application
+- npm start to start the web application (default is Chrome)
 
-# Getting Started with Create React App
+# How to use the Book Catalog web application
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Add book
 
-## Available Scripts
+- Type in the required field
+- Click "Submit Add Book"
 
-In the project directory, you can run:
+# Delete book
 
-### `npm start`
+- Click the "x" mark near each book
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+# Edit book
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- Type in the required field
+- Click "Edit" on the specific book that you want to edit
 
+# Group by (Years, Rating, Author)
+
+- Default is "Group by Years"
+- Click on specfic button depends on how you want the books to group by
