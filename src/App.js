@@ -11,55 +11,23 @@ import {
 import { db } from "./firebase-config";
 
 import Header from "./components/Header";
-import Years from "./components/Years";
+import Books from "./components/Books";
 
 import RecommendedBook from "./components/RecommendedBook";
 
 function App() {
   const booksCollectionRef = collection(db, "books");
-  const [years, setYears] = useState([]);
+  const [books, setBooks] = useState([]);
   const [recommendedBook, setRecommendedBook] = useState({});
+  const [options, setOptions] = useState("pubYear");
+
   // first time going to website
   useEffect(() => {
-    getBooks();
-  }, []);
+    getBooksGroupBy(options);
+  }, [options]);
 
   // function to group by options
-  const booksGroupBy = async (options) => {
-    let orderData = [];
-    const orderResponse = await getDocs(booksCollectionRef);
-    const orders = orderResponse.docs;
-    orderData = orders.map((doc) => ({ id: doc.id, ...doc.data() }));
-
-    let grouped = mapValues(groupBy(orderData, options), (clist) =>
-      clist.map((year) => omit(year, options))
-    );
-
-    const keys = Object.keys(grouped);
-
-    keys.forEach((key) => {
-      grouped[key].sort((firstItem, secondItem) => {
-        return firstItem.name.toLowerCase() < secondItem.name.toLowerCase()
-          ? -1
-          : firstItem.name.toLowerCase() > secondItem.name.toLowerCase()
-          ? 1
-          : 0;
-      });
-    });
-
-    const entries = Object.entries(grouped);
-    entries.sort((firstArray, secondArray) => {
-      return secondArray[0] - firstArray[0];
-    });
-
-    const arrOfObj = entries.map(([key, value]) => {
-      return { [key]: value };
-    });
-
-    setYears(arrOfObj);
-  };
-
-  const getBooks = async () => {
+  const getBooksGroupBy = async (options) => {
     let orderData = [];
     const orderResponse = await getDocs(booksCollectionRef);
     const orders = orderResponse.docs;
@@ -74,28 +42,34 @@ function App() {
       (book) => currentYear - book.pubYear <= 3
     );
 
-    const bestRating = booksMin3Years.reduce((prevBook, currentBook) => {
-      return prevBook.rating > currentBook.rating
-        ? prevBook.rating
-        : currentBook.rating;
-    });
-
-    const filteredBook = booksMin3Years.filter(
-      (book) => book.rating === bestRating
-    );
-
-    if (filteredBook.length > 1) {
-      const randomPosition = Math.floor(Math.random() * filteredBook.length);
-      setRecommendedBook(filteredBook[randomPosition]);
+    // Handle if there are books 3 years earlier
+    if (booksMin3Years.length === 0) {
+      setRecommendedBook({});
     } else {
-      setRecommendedBook(filteredBook[0]);
+      const bestRating = booksMin3Years.reduce((prevBook, currentBook) => {
+        return prevBook.rating > currentBook.rating
+          ? prevBook.rating
+          : currentBook.rating;
+      });
+
+      const filteredBook = booksMin3Years.filter(
+        (book) => book.rating === bestRating
+      );
+
+      if (filteredBook.length > 1) {
+        const randomPosition = Math.floor(Math.random() * filteredBook.length);
+        setRecommendedBook(filteredBook[randomPosition]);
+      } else {
+        setRecommendedBook(filteredBook[0]);
+      }
     }
 
-    // Modify based on requirement 3, group by Pubyear and sort by name asc
-    let grouped = mapValues(groupBy(orderData, "pubYear"), (clist) =>
-      clist.map((year) => omit(year, "pubYear"))
+    // Handle group by
+    let grouped = mapValues(groupBy(orderData, options), (clist) =>
+      clist.map((optionValue) => omit(optionValue, options))
     );
 
+    // sort alphabetically
     const keys = Object.keys(grouped);
 
     keys.forEach((key) => {
@@ -108,16 +82,26 @@ function App() {
       });
     });
 
+    // sort group by groupValue desc
     const entries = Object.entries(grouped);
     entries.sort((firstArray, secondArray) => {
       return secondArray[0] - firstArray[0];
     });
 
+    // map new object into new array with this format
+    // [ year3 : [{bookA}, {bookB}],
+    //   year2: [{bookD}, {bookE}],
+    //   year1 : [{bookB}, {bookE}] ]
     const arrOfObj = entries.map(([key, value]) => {
       return { [key]: value };
     });
 
-    setYears(arrOfObj);
+    setBooks(arrOfObj);
+  };
+
+  // Handle group by options
+  const handleOptionsChange = (event) => {
+    setOptions(event.target.value);
   };
 
   // add book
@@ -126,8 +110,8 @@ function App() {
   const [pubYear, setpubYear] = useState(0);
   const [rating, setRating] = useState(0);
   const [isbn, setIsbn] = useState("");
-  // Add book to Firebase
-  const addBookFirestore = async () => {
+  // Add book logic
+  const addBookHandler = async () => {
     if (!name || name.length > 100) {
       alert("Book name should be between 0 and 100 characters.");
       return;
@@ -177,10 +161,10 @@ function App() {
       isbn: isbn,
     });
 
-    await getBooks();
+    await getBooksGroupBy(options);
   };
 
-  // onSubmit
+  // onSubmit to reset value of all fields
   const onSubmit = (e) => {
     e.preventDefault();
 
@@ -192,14 +176,14 @@ function App() {
   };
 
   // Delete book
-  const deleteBookEvent = async (id) => {
+  const deleteBookHandler = async (id) => {
     const bookDoc = doc(db, "books", id);
     await deleteDoc(bookDoc);
-    await getBooks();
+    await getBooksGroupBy(options);
   };
 
   // Edit book
-  const updateBook = async (id) => {
+  const updateBookHandler = async (id) => {
     if (!name || name.length > 100) {
       alert("Edit Book name should be between 0 and 100 characters.");
       return;
@@ -249,7 +233,7 @@ function App() {
       isbn: isbn,
     });
 
-    await getBooks();
+    await getBooksGroupBy(options);
 
     setName("");
     setauthor("");
@@ -316,26 +300,28 @@ function App() {
           type="submit"
           value="Submit Add Book"
           className="btn btn-block"
-          onClick={addBookFirestore}
+          onClick={addBookHandler}
         />
       </form>
       <h1>Recommended Book</h1>
-      {recommendedBook ? (
+      {recommendedBook && Object.keys(recommendedBook).length !== 0 ? (
         <RecommendedBook recommendedBook={recommendedBook} />
       ) : (
-        <p>No book to recommend</p>
+        <p>No books meet criteria to recommend</p>
       )}
-      <button className="btn" onClick={() => booksGroupBy("pubYear")}>
-        Group by Years
-      </button>
-      <button className="btn" onClick={() => booksGroupBy("rating")}>
-        Group by Rating
-      </button>
-      <button className="btn" onClick={() => booksGroupBy("author")}>
-        Group by Author
-      </button>
-      {years.length > 0 ? (
-        <Years years={years} onDelete={deleteBookEvent} onEdit={updateBook} />
+      <select value={options} onChange={handleOptionsChange}>
+        <option value="pubYear"> Group by Years</option>
+        <option value="rating"> Group by Rating</option>
+        <option value="author"> Group by Author</option>
+      </select>
+
+      {books.length > 0 ? (
+        <Books
+          books={books}
+          options={options}
+          onDelete={deleteBookHandler}
+          onEdit={updateBookHandler}
+        />
       ) : (
         "No Books to show"
       )}

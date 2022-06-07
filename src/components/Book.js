@@ -13,12 +13,15 @@ const Book = ({ book, onDelete, onEdit }) => {
       </h3>
       {book.author ? <p>Author: {book.author}</p> : ""}
 
-      {book.rating ? <p> Rating: {book.rating} </p> : ""}
+      {book.pubYear ? <p>Publication year: {book.pubYear}</p> : ""}
+
+      {book.rating || book.rating == 0 ? <p> Rating: {book.rating} </p> : ""}
 
       <p> ISBN: {book.isbn}</p>
 
-      {/* {book.isbn ? <p> ISBN: {book.isbn} </p> : ""} */}
-      <div className="btn" onClick= {() => onEdit(book.id) } >Edit</div>
+      <div className="btn" onClick={() => onEdit(book.id)}>
+        Edit
+      </div>
     </div>
   );
 };

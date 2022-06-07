@@ -1,7 +1,7 @@
 const RecommendedBook = ({ recommendedBook }) => {
   return (
     <>
-      <h2>Name: {recommendedBook.name}</h2>
+      <h3>Name: {recommendedBook.name}</h3>
       <p>Author: {recommendedBook.author}</p>
 
       <p> Rating: {recommendedBook.rating} </p>
