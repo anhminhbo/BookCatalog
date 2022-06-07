@@ -9,6 +9,7 @@
 ● Add or Edit form
 ● Add button
 ● Recommended book
+● Drop-down list group by options
 ● [
     Heading: (options: Years || Rating || Author)
     Books: [
