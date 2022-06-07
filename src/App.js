@@ -45,6 +45,8 @@ function App() {
     // Handle if there are books 3 years earlier
     if (booksMin3Years.length === 0) {
       setRecommendedBook({});
+    } else if (booksMin3Years.length === 1) {
+      setRecommendedBook(booksMin3Years[0]);
     } else {
       const bestRating = booksMin3Years.reduce((prevBook, currentBook) => {
         return prevBook.rating > currentBook.rating
@@ -65,14 +67,17 @@ function App() {
     }
 
     // Handle group by
+    // grouped value example:
+    // { option1: [{book1}, {book2}]
+    //   option1: [{book3}, {book4}] }
     let grouped = mapValues(groupBy(orderData, options), (clist) =>
       clist.map((optionValue) => omit(optionValue, options))
     );
 
-    // sort alphabetically
-    const keys = Object.keys(grouped);
+    // sort book alphabetically for each group
+    const keysOption = Object.keys(grouped);
 
-    keys.forEach((key) => {
+    keysOption.forEach((key) => {
       grouped[key].sort((firstItem, secondItem) => {
         return firstItem.name.toLowerCase() < secondItem.name.toLowerCase()
           ? -1
@@ -83,15 +88,18 @@ function App() {
     });
 
     // sort group by groupValue desc
+    // entries value example:
+    // [ option1, [{book1}, {book2}],
+    //  option2, [{book3}, {book4}] ]
     const entries = Object.entries(grouped);
     entries.sort((firstArray, secondArray) => {
       return secondArray[0] - firstArray[0];
     });
 
     // map new object into new array with this format
-    // [ year3 : [{bookA}, {bookB}],
-    //   year2: [{bookD}, {bookE}],
-    //   year1 : [{bookB}, {bookE}] ]
+    // [ option3 : [{bookA}, {bookB}],
+    //   option2: [{bookD}, {bookE}],
+    //   option1 : [{bookB}, {bookE}] ]
     const arrOfObj = entries.map(([key, value]) => {
       return { [key]: value };
     });
@@ -130,7 +138,7 @@ function App() {
       return;
     }
 
-    const isIsbnValid = (isbnCode) => {
+    const isValidIsbn = (isbnCode) => {
       if (isbnCode.length !== 10) return false;
       let sum = 0;
       [...isbnCode].forEach((c, index) => {
@@ -148,7 +156,7 @@ function App() {
       return false;
     };
 
-    if (isbn && !isIsbnValid(isbn)) {
+    if (isbn && !isValidIsbn(isbn)) {
       alert("ISBN is invalid");
       return;
     }
@@ -202,7 +210,7 @@ function App() {
       return;
     }
 
-    const isIsbnValid = (isbnCode) => {
+    const isValidIsbn = (isbnCode) => {
       if (isbnCode.length !== 10) return false;
       let sum = 0;
       [...isbnCode].forEach((c, index) => {
@@ -220,7 +228,7 @@ function App() {
       return false;
     };
 
-    if (isbn && !isIsbnValid(isbn)) {
+    if (isbn && !isValidIsbn(isbn)) {
       alert("Edit ISBN is invalid");
       return;
     }
