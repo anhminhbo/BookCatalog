@@ -138,25 +138,40 @@ function App() {
       return;
     }
 
-    const isValidIsbn = (isbnCode) => {
-      if (isbnCode.length !== 10) return false;
-      let sum = 0;
-      [...isbnCode].forEach((c, index) => {
-        // Handle the last element of isbn
-        if (index === 9 && c === "X") {
-          sum += (10 - index) * 10;
-        } else {
-          if (Number.isInteger(+c)) sum += (10 - index) * +c;
-          else return false;
-        }
-      });
+    const isbnSanitize = isbn.trim().split("-").join("");
 
-      if (sum % 11 === 0) return true;
+    // Refer to https://en.wikipedia.org/wiki/ISBN to know the rules
+    const isValidIsbn = (isbnCode) => {
+      let sum = 0;
+      // Check ISBN-10
+      if (isbnCode.length === 10) {
+        [...isbnCode].forEach((c, index) => {
+          if (index === 9 && c.toLowerCase() === "x") {
+            sum += (10 - index) * 10;
+          } else {
+            if (Number.isInteger(+c)) sum += (10 - index) * +c;
+            else return false;
+          }
+        });
+
+        if (sum % 11 === 0) return true;
+      }
+
+      // Check ISBN-13
+      if (isbnCode.length === 13) {
+        [...isbnCode].forEach((c, index) => {
+          if (!Number.isInteger(+c)) return false;
+          if (index === 0 || index % 2 === 0) sum += +c * 1;
+          else sum += +c * 3;
+        });
+
+        if (sum % 10 === 0) return true;
+      }
 
       return false;
     };
 
-    if (isbn && !isValidIsbn(isbn)) {
+    if (isbnSanitize && !isValidIsbn(isbnSanitize)) {
       alert("ISBN is invalid");
       return;
     }
@@ -166,7 +181,7 @@ function App() {
       author: author.trim(),
       pubYear: +pubYear,
       rating: +rating,
-      isbn: isbn,
+      isbn: isbnSanitize,
     });
 
     await getBooksGroupBy(options);
@@ -210,25 +225,41 @@ function App() {
       return;
     }
 
-    const isValidIsbn = (isbnCode) => {
-      if (isbnCode.length !== 10) return false;
-      let sum = 0;
-      [...isbnCode].forEach((c, index) => {
-        // Handle the last element of isbn
-        if (index === 9 && c === "X") {
-          sum += (10 - index) * 10;
-        } else {
-          if (Number.isInteger(+c)) sum += (10 - index) * +c;
-          else return false;
-        }
-      });
+    const isbnSanitize = isbn.trim().split("-").join("");
 
-      if (sum % 11 === 0) return true;
+    // Refer to https://en.wikipedia.org/wiki/ISBN to know the rule's
+    const isValidIsbn = (isbnCode) => {
+      let sum = 0;
+      // Check ISBN-10
+      if (isbnCode.length === 10) {
+        [...isbnCode].forEach((c, index) => {
+          // Handle the last element of isbn
+          if (index === 9 && c.toLowerCase() === "x") {
+            sum += (10 - index) * 10;
+          } else {
+            if (Number.isInteger(+c)) sum += (10 - index) * +c;
+            else return false;
+          }
+        });
+
+        if (sum % 11 === 0) return true;
+      }
+
+      // Check ISBN-13
+      if (isbnCode.length === 13) {
+        [...isbnCode].forEach((c, index) => {
+          if (!Number.isInteger(+c)) return false;
+          if (index === 0 || index % 2 === 0) sum += +c * 1;
+          else sum += +c * 3;
+        });
+
+        if (sum % 10 === 0) return true;
+      }
 
       return false;
     };
 
-    if (isbn && !isValidIsbn(isbn)) {
+    if (isbnSanitize && !isValidIsbn(isbnSanitize)) {
       alert("Edit ISBN is invalid");
       return;
     }
@@ -238,7 +269,7 @@ function App() {
       author: author.trim(),
       pubYear: +pubYear,
       rating: +rating,
-      isbn: isbn,
+      isbn: isbnSanitize,
     });
 
     await getBooksGroupBy(options);
